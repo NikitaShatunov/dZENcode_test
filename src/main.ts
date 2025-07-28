@@ -4,6 +4,9 @@ import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { UsersModule } from './users/users.module';
+import { CommentsModule } from './comments/comments.module';
+import { LocalAuthModule } from './local-auth/local-auth.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,7 +28,7 @@ async function bootstrap() {
     )
     .build();
   const document = SwaggerModule.createDocument(app, config, {
-    include: [AppModule],
+    include: [UsersModule, CommentsModule, LocalAuthModule],
   });
   SwaggerModule.setup('api', app, document);
   app.use(bodyParser.json());
