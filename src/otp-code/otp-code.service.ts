@@ -1,11 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { isIdNumber } from "../helpers/isIdNumber";
-import { OtpCode } from "./entities/otp-code.entity";
-import { EntityManager, Repository } from "typeorm";
-import { CreateOtpCodeDto } from "./dto/create-otp-code.dto";
-import { User } from "src/users/entities/user.entity";
-import { UpdateOtpCodeDto } from "./dto/update-otp-code.dto";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { isIdNumber } from '../common/helpers/isIdNumber';
+import { OtpCode } from './entities/otp-code.entity';
+import { EntityManager, Repository } from 'typeorm';
+import { CreateOtpCodeDto } from './dto/create-otp-code.dto';
+import { User } from 'src/users/entities/user.entity';
+import { UpdateOtpCodeDto } from './dto/update-otp-code.dto';
 
 @Injectable()
 export class OtpCodeService {
@@ -36,7 +36,10 @@ export class OtpCodeService {
       });
 
       if (!user) {
-        throw new HttpException(`${role.charAt(0).toUpperCase() + role.slice(1)} with id ${userId} is not found`, HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          `${role.charAt(0).toUpperCase() + role.slice(1)} with id ${userId} is not found`,
+          HttpStatus.BAD_REQUEST,
+        );
       }
       if (user.otp) await this.remove(user.otp.id);
 
@@ -63,10 +66,13 @@ export class OtpCodeService {
 
   async findOne(id: number) {
     try {
-      isIdNumber(id, "otp");
+      isIdNumber(id, 'otp');
       const otp = await this.otpCodeRepository.findOne({ where: { id } });
       if (!otp) {
-        throw new HttpException("There is no otp codes with id:" + id, HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'There is no otp codes with id:' + id,
+          HttpStatus.NOT_FOUND,
+        );
       }
       // const isValid = new Date() > otp.expirationTime ? false : true;
       // if (!isValid) {
@@ -82,7 +88,10 @@ export class OtpCodeService {
     try {
       const otpCode = await this.findOne(id);
       if (!otpCode) {
-        throw new HttpException(`OTP with id ${id} is not found`, HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          `OTP with id ${id} is not found`,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       this.otpCodeRepository.merge(otpCode, {

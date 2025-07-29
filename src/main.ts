@@ -7,6 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module';
 import { LocalAuthModule } from './local-auth/local-auth.module';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,6 +35,7 @@ async function bootstrap() {
   app.use(bodyParser.json());
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
+  app.useWebSocketAdapter(new IoAdapter(app));
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

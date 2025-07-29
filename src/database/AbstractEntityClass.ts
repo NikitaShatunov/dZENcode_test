@@ -13,12 +13,12 @@ export class AbstractEntityClass<T> {
   id: number;
 
   @CreateDateColumn({ name: 'created_at' })
-  'created_at': Date;
+  'createdAt': Date;
 
   @UpdateDateColumn({
     name: 'updated_at',
   })
-  'updated_at': Date;
+  'updatedAt': Date;
 
   constructor(item: Partial<T>) {
     Object.assign(this, item);

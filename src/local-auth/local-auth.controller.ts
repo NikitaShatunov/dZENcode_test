@@ -33,12 +33,6 @@ export class LocalAuthController {
     return req.user;
   }
 
-  @ApiOperation({ summary: 'Sign up' })
-  @Post('sign-up')
-  async signUp(@Body() signUpPayload: SignUpDto) {
-    return this.authService.registrateUser(signUpPayload);
-  }
-
   @ApiOperation({ summary: 'Change password' })
   @Put('change-password')
   async changePassword(@Body() changePasswordDto: ChangePasswordDto) {

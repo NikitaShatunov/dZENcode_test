@@ -3,11 +3,11 @@ import * as argon2 from 'argon2';
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { isIdNumber } from 'src/helpers/isIdNumber';
-import { validateGetById } from 'src/helpers/validateGetById';
+import { isIdNumber } from 'src/common/helpers/isIdNumber';
+import { validateGetById } from 'src/common/helpers/validateGetById';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { isUniquePropertyValue } from 'src/helpers/isUniquePropertyValue';
+import { isUniquePropertyValue } from 'src/common/helpers/isUniquePropertyValue';
 import { Repository } from 'typeorm';
 import {
   adjectives,
@@ -33,7 +33,8 @@ export class UsersService {
       password: passwordHash,
       name,
     });
-    return await this.userRepository.save(user);
+    const { password, ...result } = await this.userRepository.save(user);
+    return result;
   }
 
   generateRandomName() {

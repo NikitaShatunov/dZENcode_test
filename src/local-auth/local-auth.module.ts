@@ -15,7 +15,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     PassportModule,
-
     TypeOrmModule.forFeature([User, OtpCode]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -34,5 +33,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     OtpCodeService,
   ],
   controllers: [LocalAuthController],
+  exports: [LocalAuthService],
 })
 export class LocalAuthModule {}

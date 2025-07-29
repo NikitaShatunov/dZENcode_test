@@ -43,8 +43,8 @@ export class LocalAuthService {
       }
 
       const isValidPassword = await argon.verify(
-        localAuthPayloadDto.password,
         findUser.password,
+        localAuthPayloadDto.password,
       );
 
       if (!isValidPassword) {
@@ -53,22 +53,6 @@ export class LocalAuthService {
 
       const { password, ...user } = findUser;
       return this.jwtService.sign({ user });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async registrateUser(signUpPayloadDto: SignUpDto) {
-    try {
-      const user = await this.userService.create(signUpPayloadDto);
-      await this.otpCodeService.create({
-        value: this.generateOTPcode(),
-        type: 'verify account',
-        expirationMinutes: 5,
-        userId: user.id,
-        role: 'user',
-      });
-      return user;
     } catch (error) {
       throw error;
     }
@@ -175,8 +159,8 @@ export class LocalAuthService {
       }
 
       const isValidPassword = await argon.verify(
-        changePasswordDto.oldPassword,
         user.password,
+        changePasswordDto.oldPassword,
       );
 
       if (!isValidPassword) {
@@ -235,8 +219,8 @@ export class LocalAuthService {
       );
     }
     const isValidPassword = await argon.verify(
-      changeEmailDto.password,
       user.password,
+      changeEmailDto.password,
     );
     if (!isValidPassword) {
       throw new HttpException(`Invalid password`, HttpStatus.UNAUTHORIZED);

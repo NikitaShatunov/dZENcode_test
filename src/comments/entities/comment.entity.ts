@@ -16,6 +16,9 @@ export class Comment extends AbstractEntityClass<Comment> {
   @OneToMany(() => Comment, (comment) => comment.parent)
   children: Comment[];
 
+  @Column({ default: 0 })
+  childrenCount: number;
+
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   user: User;
 }
