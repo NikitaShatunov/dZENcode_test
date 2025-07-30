@@ -7,6 +7,7 @@ import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { LocalAuthModule } from './local-auth/local-auth.module';
 import { OtpCodeModule } from './otp-code/otp-code.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -16,6 +17,12 @@ import { OtpCodeModule } from './otp-code/otp-code.module';
     UsersModule,
     LocalAuthModule,
     OtpCodeModule,
+    CacheModule.register({
+      ttl: 5000, // 5 seconds
+      max: 100,
+      isGlobal: true,
+      store: 'memory',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

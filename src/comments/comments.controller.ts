@@ -12,6 +12,9 @@ import { CommentsService } from './comments.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { JwtAuthGuard } from 'src/local-auth/guards/jwt.guard';
+import { CommentPageDto } from 'src/pagination/comments/comment-page.dto';
+import { PageDto } from 'src/pagination/page.dto';
+import { CommentDto } from 'src/pagination/comments/comment.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -27,12 +30,10 @@ export class CommentsController {
 
   @Get('roots')
   async getRootComments(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ) {
+    @Query() pageOptionsDto: CommentPageDto,
+  ): Promise<PageDto<CommentDto>> {
     return this.commentsService.findRootCommentsWithChildrenPaginated(
-      page,
-      limit,
+      pageOptionsDto,
     );
   }
 

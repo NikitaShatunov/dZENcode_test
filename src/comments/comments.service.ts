@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { validateGetById } from 'src/common/helpers/validateGetById';
 import { Comment } from './entities/comment.entity';
+import { CommentPageDto } from 'src/pagination/comments/comment-page.dto';
+import { PageDto } from 'src/pagination/page.dto';
+import { PageMetaDto } from 'src/pagination/page-meta.dto';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class CommentsService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
     private readonly userService: UsersService,
@@ -27,59 +32,83 @@ export class CommentsService {
         1,
       );
     }
+    await this.cacheManager.clear();
     return 201;
   }
 
   // Main method for root comments
-  async findRootCommentsWithChildrenPaginated(page: number, limit: number) {
-    const [comments, total] = await this.commentRepository.findAndCount({
-      where: { parent: null },
-      relations: { user: true }, // We show only first level
-      select: {
-        user: { id: true, name: true },
-      },
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+  async findRootCommentsWithChildrenPaginated(
+    pageOptionsDto: CommentPageDto,
+  ): Promise<PageDto<Comment>> {
+    const { page, take, sortBy, order } = pageOptionsDto;
+    const skip = (page - 1) * take;
 
-    return {
-      data: comments,
-      total,
-      page,
-      limit,
-    };
+    const cacheKey = `root_comments_page_${page}_take_${take}_sort_${sortBy}_${order}`;
+    // Check if the data is already cached
+    const cached = await this.cacheManager.get<PageDto<Comment>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const [comments, itemCount] = await this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoin('comment.user', 'user')
+      .addSelect(['user.id', 'user.name', 'user.email'])
+      .where('comment.parent IS NULL')
+      //By default, sort by createdAt if no sortBy is provided
+      .orderBy(sortBy || 'comment.createdAt', order || 'DESC')
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    const pageMetaDto = new PageMetaDto({ pageOptionsDto, itemCount });
+    const result = new PageDto(comments, pageMetaDto);
+
+    await this.cacheManager.set(cacheKey, result);
+    return result;
   }
 
   async findChildrenByParentId(
     parentId: number,
     page: number = 1,
-    limit: number = 5,
-  ) {
-    const [children, total] = await this.commentRepository.findAndCount({
-      where: { parent: { id: parentId } },
-      relations: ['user', 'children', 'children.user'],
-      select: {
-        user: { id: true, name: true },
-        children: {
-          id: true,
-          text: true,
-          createdAt: true,
-          user: { id: true, name: true },
-        },
-      },
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
+    take: number = 5,
+  ): Promise<PageDto<Comment>> {
+    const skip = (page - 1) * take;
+    const cacheKey = `children_comments_parent_${parentId}_page_${page}_take_${take}`;
+
+    const cached = await this.cacheManager.get<PageDto<Comment>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+    const [children, itemCount] = await this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoin('comment.user', 'user')
+      .leftJoin('comment.children', 'children')
+      .leftJoin('children.user', 'childrenUser')
+      .addSelect([
+        'user.id',
+        'user.name',
+        'children.id',
+        'children.text',
+        'children.createdAt',
+        'childrenUser.id',
+        'childrenUser.name',
+      ])
+      .where('comment.parent = :parentId', { parentId })
+      .orderBy('comment.createdAt', 'DESC')
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: { page, take },
+      itemCount,
     });
 
-    return {
-      data: children,
-      total,
-      page,
-      limit,
-      parentId,
-    };
+    const result = new PageDto(children, pageMetaDto);
+    await this.cacheManager.set(cacheKey, result);
+
+    return result;
   }
 
   async findOne(id: number) {
