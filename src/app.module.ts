@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { LocalAuthModule } from './local-auth/local-auth.module';
 import { OtpCodeModule } from './otp-code/otp-code.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { LogsRecordsModule } from './logs-records/logs-records.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { CacheModule } from '@nestjs/cache-manager';
       isGlobal: true,
       store: 'memory',
     }),
+    EventEmitterModule.forRoot({}),
+    LogsRecordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

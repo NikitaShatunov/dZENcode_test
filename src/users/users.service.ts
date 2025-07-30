@@ -14,11 +14,14 @@ import {
   animals,
   uniqueNamesGenerator,
 } from 'unique-names-generator';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserCreatedEvent } from './events/user-created.events';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
   async create(createUserDto: CreateUserDto) {
     await isUniquePropertyValue(
@@ -34,6 +37,13 @@ export class UsersService {
       name,
     });
     const { password, ...result } = await this.userRepository.save(user);
+    // Emit the event after the user is created used for logging or other side effects(email notifications, etc.)
+    const userCreatedEvent: UserCreatedEvent = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    };
+    this.eventEmitter.emit('user.created', userCreatedEvent);
     return result;
   }
 

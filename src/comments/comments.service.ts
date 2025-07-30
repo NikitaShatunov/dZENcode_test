@@ -9,6 +9,8 @@ import { CommentPageDto } from 'src/pagination/comments/comment-page.dto';
 import { PageDto } from 'src/pagination/page.dto';
 import { PageMetaDto } from 'src/pagination/page-meta.dto';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CommentCreatedEvent } from './events/comment-created.event';
 
 @Injectable()
 export class CommentsService {
@@ -17,6 +19,7 @@ export class CommentsService {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
     private readonly userService: UsersService,
+    private eventEmitter: EventEmitter2,
   ) {}
   async create(createCommentDto: CreateCommentDto, userId: number) {
     const { parentCommentId, text } = createCommentDto;
@@ -33,6 +36,13 @@ export class CommentsService {
       );
     }
     await this.cacheManager.clear();
+    // Emit the event after the comment is created used for logging or other side effects(email notifications, etc.)
+    const commentCreatedEvent: CommentCreatedEvent = {
+      id: savedComment.id,
+      userId: user.id,
+      parentCommentId: savedComment.parent?.id,
+    };
+    this.eventEmitter.emit('comment.created', commentCreatedEvent);
     return 201;
   }
 
