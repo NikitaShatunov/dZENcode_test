@@ -6,9 +6,15 @@ import { Comment } from './entities/comment.entity';
 import { CommentsController } from './comments.controller';
 import { LocalAuthModule } from 'src/local-auth/local-auth.module';
 import { UsersModule } from 'src/users/users.module';
+import { MediaModule } from 'src/media/media.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comment]), LocalAuthModule, UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Comment]),
+    LocalAuthModule,
+    UsersModule,
+    MediaModule,
+  ],
   controllers: [CommentsController],
   providers: [CommentsGateway, CommentsService],
 })

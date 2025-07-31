@@ -54,7 +54,6 @@ export class CommentsGateway
 
       client.data.user = payload.user;
       this.clients.set(client.id, payload.user.id);
-      console.log(`Client connected:`, client.id);
     } catch (err) {
       console.log('WebSocket connection unauthorized:', err.message);
       client.disconnect();
@@ -62,7 +61,6 @@ export class CommentsGateway
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
     this.clients.delete(client.id);
   }
 
@@ -88,7 +86,6 @@ export class CommentsGateway
   handleNewCommentEvent(comment: any) {
     for (const [clientId, userId] of this.clients.entries()) {
       const socket = this.server.sockets.sockets.get(clientId);
-      console.log(`Emitting comment to client ${clientId} for user ${userId}`);
       if (socket) {
         socket.emit('commentAdded', comment);
       }

@@ -25,6 +25,11 @@ export class CreateCommentDto {
   @IsOptional()
   parentCommentId: number;
 
+  @ApiProperty({ required: false, example: 1 })
+  @IsNumber()
+  @IsOptional()
+  mediaId: number;
+
   @ApiProperty({ required: true, example: 'John Doe' })
   @MaxLength(50)
   @IsString()

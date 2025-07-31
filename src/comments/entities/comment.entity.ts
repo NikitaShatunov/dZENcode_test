@@ -1,6 +1,14 @@
 import { AbstractEntityClass } from 'src/database/AbstractEntityClass';
+import { Media } from 'src/media/entities/media.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 
 @Entity()
 export class Comment extends AbstractEntityClass<Comment> {
@@ -21,6 +29,10 @@ export class Comment extends AbstractEntityClass<Comment> {
 
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   user: User;
+
+  @OneToOne(() => Media, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'mediaId' })
+  media: Media;
 
   @Column({ nullable: false })
   userName: string;

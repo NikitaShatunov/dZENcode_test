@@ -5,6 +5,7 @@ import { CommentCreatedEvent } from 'src/comments/events/comment-created.event';
 import { LogResource, LogsRecord } from './entities/logs-record.entity';
 import { Repository } from 'typeorm';
 import { UserCreatedEvent } from 'src/users/events/user-created.events';
+import { CommentDeletedEvent } from 'src/comments/events/comment-deleted.event';
 
 @Injectable()
 export class LogsRecordsService {
@@ -35,6 +36,18 @@ export class LogsRecordsService {
     const logsRecord = this.logsRecordRepository.create({
       message,
       resourceName: LogResource.USER,
+      resourceId: id,
+    });
+    this.logsRecordRepository.save(logsRecord);
+  }
+
+  @OnEvent('comment.deleted')
+  handleCommentDeletedEvent(event: CommentDeletedEvent) {
+    const { id } = event;
+    const message = `Comment with ID ${id} deleted by user`;
+    const logsRecord = this.logsRecordRepository.create({
+      message,
+      resourceName: LogResource.COMMENT,
       resourceId: id,
     });
     this.logsRecordRepository.save(logsRecord);

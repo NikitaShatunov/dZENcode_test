@@ -10,6 +10,7 @@ import { OtpCodeModule } from './otp-code/otp-code.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LogsRecordsModule } from './logs-records/logs-records.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { LogsRecordsModule } from './logs-records/logs-records.module';
     }),
     EventEmitterModule.forRoot({}),
     LogsRecordsModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
