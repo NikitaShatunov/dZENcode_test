@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -44,5 +45,11 @@ export class CommentsController {
     @Query('limit') limit: number = 5,
   ) {
     return this.commentsService.findChildrenByParentId(parentId, page, limit);
+  }
+
+  @Delete(':id')
+  async deleteComment(@Param('id') id: number, @Req() req) {
+    const userId = req.user?.user?.id;
+    return this.commentsService.remove(id, userId);
   }
 }

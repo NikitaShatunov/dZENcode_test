@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module';
 import { LocalAuthModule } from './local-auth/local-auth.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { MediaModule } from './media/media.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,7 +30,7 @@ async function bootstrap() {
     )
     .build();
   const document = SwaggerModule.createDocument(app, config, {
-    include: [UsersModule, CommentsModule, LocalAuthModule],
+    include: [UsersModule, CommentsModule, LocalAuthModule, MediaModule],
   });
   SwaggerModule.setup('api', app, document);
   app.use(bodyParser.json());

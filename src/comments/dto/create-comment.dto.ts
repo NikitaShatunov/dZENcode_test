@@ -23,4 +23,9 @@ export class CreateCommentDto {
   @IsNumber()
   @IsOptional()
   parentCommentId: number;
+
+  @ApiProperty({ required: false, example: 1 })
+  @IsNumber()
+  @IsOptional()
+  mediaId: number;
 }

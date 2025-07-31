@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +16,8 @@ import { PageMetaDto } from 'src/pagination/page-meta.dto';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CommentCreatedEvent } from './events/comment-created.event';
+import { MediaService } from 'src/media/media.service';
+import { CommentDeletedEvent } from './events/comment-deleted.event';
 
 @Injectable()
 export class CommentsService {
@@ -20,12 +27,20 @@ export class CommentsService {
     private readonly commentRepository: Repository<Comment>,
     private readonly userService: UsersService,
     private eventEmitter: EventEmitter2,
+    private readonly mediaService: MediaService,
   ) {}
   async create(createCommentDto: CreateCommentDto, userId: number) {
-    const { parentCommentId, text } = createCommentDto;
+    const { parentCommentId, text, mediaId } = createCommentDto;
     const parent = parentCommentId ? await this.findOne(parentCommentId) : null;
     const user = await this.userService.findOne(userId);
-    const comment = this.commentRepository.create({ parent, user, text });
+    const media = await this.mediaService.findOne(mediaId);
+    const comment = this.commentRepository.create({
+      parent,
+      user,
+      text,
+      media,
+    });
+
     const savedComment = await this.commentRepository.save(comment);
 
     if (savedComment.parent) {
@@ -43,7 +58,7 @@ export class CommentsService {
       parentCommentId: savedComment.parent?.id,
     };
     this.eventEmitter.emit('comment.created', commentCreatedEvent);
-    return 201;
+    return HttpStatus.CREATED;
   }
 
   // Main method for root comments
@@ -63,10 +78,11 @@ export class CommentsService {
     const [comments, itemCount] = await this.commentRepository
       .createQueryBuilder('comment')
       .leftJoin('comment.user', 'user')
+      .leftJoinAndSelect('comment.media', 'media')
       .addSelect(['user.id', 'user.name', 'user.email'])
       .where('comment.parent IS NULL')
       //By default, sort by createdAt if no sortBy is provided
-      .orderBy(sortBy || 'comment.createdAt', order || 'DESC')
+      .orderBy(sortBy || 'comment.createdAt', order || 'ASC')
       .skip(skip)
       .take(take)
       .getManyAndCount();
@@ -92,6 +108,7 @@ export class CommentsService {
     }
     const [children, itemCount] = await this.commentRepository
       .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.media', 'media')
       .leftJoin('comment.user', 'user')
       .leftJoin('comment.children', 'children')
       .leftJoin('children.user', 'childrenUser')
@@ -105,7 +122,7 @@ export class CommentsService {
         'childrenUser.name',
       ])
       .where('comment.parent = :parentId', { parentId })
-      .orderBy('comment.createdAt', 'DESC')
+      .orderBy('comment.createdAt', 'ASC')
       .skip(skip)
       .take(take)
       .getManyAndCount();
@@ -121,13 +138,34 @@ export class CommentsService {
     return result;
   }
 
-  async findOne(id: number) {
-    const comment = await this.commentRepository.findOne({ where: { id } });
+  async findOne(id: number, userId?: number): Promise<Comment> {
+    const comment = await this.commentRepository.findOne({
+      where: { id },
+      relations: ['user', 'media'],
+    });
     validateGetById(id, comment, 'Comment');
+
+    if (userId) {
+      //find user to validate if the user is the owner of the comment
+      const user = await this.userService.findOne(userId);
+
+      if (comment.user?.id !== user.id) {
+        throw new ForbiddenException('You are not the owner of this comment');
+      }
+    }
     return comment;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
+  async remove(id: number, userId: number) {
+    const comment = await this.findOne(id, userId);
+    await this.commentRepository.delete(id);
+    await this.cacheManager.clear();
+    const commentDeletedEvent: CommentDeletedEvent = {
+      id,
+      fileId: comment.media?.id,
+    };
+    this.eventEmitter.emit('comment.deleted', commentDeletedEvent);
+
+    return { message: 'Comment deleted successfully', status: HttpStatus.OK };
   }
 }
