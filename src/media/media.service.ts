@@ -14,7 +14,6 @@ import { isIdNumber } from 'src/common/helpers/isIdNumber';
 import { validateGetById } from 'src/common/helpers/validateGetById';
 import { OnEvent } from '@nestjs/event-emitter';
 import { CommentDeletedEvent } from 'src/comments/events/comment-deleted.event';
-import { Comment } from 'src/comments/entities/comment.entity';
 
 @Injectable()
 export class MediaService {
@@ -50,7 +49,7 @@ export class MediaService {
     }
   }
 
-  async getMedia(id: number, token: string) {
+  async getMedia(id: number) {
     const media = await this.findOne(id);
     const filePath = media.path;
     try {

@@ -38,21 +38,10 @@ export class MediaController {
     return { filePath: savedFilePath };
   }
 
-  @ApiQuery({ name: 'token', required: true, example: 'token' })
   @Get('/file/:id')
-  async getMedia(
-    @Param('id') id: number,
-    @Res() res: Response,
-    @Query('token') token: string,
-  ) {
-    if (!token) {
-      throw new HttpException(
-        'Unauthorized: do not have token',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+  async getMedia(@Param('id') id: number, @Res() res: Response) {
     try {
-      const { fileBuffer, name } = await this.mediaService.getMedia(id, token);
+      const { fileBuffer, name } = await this.mediaService.getMedia(id);
       const encodedName = encodeURIComponent(name);
       res.set({
         'Content-Disposition': `attachment; filename="${encodedName}"`,

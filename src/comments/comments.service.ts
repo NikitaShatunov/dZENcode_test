@@ -18,6 +18,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CommentCreatedEvent } from './events/comment-created.event';
 import { MediaService } from 'src/media/media.service';
 import { CommentDeletedEvent } from './events/comment-deleted.event';
+import { Media } from 'src/media/entities/media.entity';
 
 @Injectable()
 export class CommentsService {
@@ -33,7 +34,8 @@ export class CommentsService {
     const { parentCommentId, text, mediaId } = createCommentDto;
     const parent = parentCommentId ? await this.findOne(parentCommentId) : null;
     const user = await this.userService.findOne(userId);
-    const media = await this.mediaService.findOne(mediaId);
+    let media: Media = null;
+    if (mediaId) media = await this.mediaService.findOne(mediaId);
     const comment = this.commentRepository.create({
       parent,
       user,
@@ -141,7 +143,7 @@ export class CommentsService {
   async findOne(id: number, userId?: number): Promise<Comment> {
     const comment = await this.commentRepository.findOne({
       where: { id },
-      relations: ['user', 'media'],
+      relations: ['user', 'media', 'parent'],
     });
     validateGetById(id, comment, 'Comment');
 
@@ -165,7 +167,13 @@ export class CommentsService {
       fileId: comment.media?.id,
     };
     this.eventEmitter.emit('comment.deleted', commentDeletedEvent);
-
+    if (comment.parent) {
+      await this.commentRepository.increment(
+        { id: comment.parent.id },
+        'childrenCount',
+        1,
+      );
+    }
     return { message: 'Comment deleted successfully', status: HttpStatus.OK };
   }
 }
