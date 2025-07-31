@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -23,4 +24,23 @@ export class CreateCommentDto {
   @IsNumber()
   @IsOptional()
   parentCommentId: number;
+
+  @ApiProperty({ required: true, example: 'John Doe' })
+  @MaxLength(50)
+  @IsString()
+  @IsNotEmpty()
+  userName: string;
+
+  @ApiProperty({ required: true, example: 'john.doe@example.com' })
+  @IsEmail()
+  @MaxLength(100)
+  @IsString()
+  @IsNotEmpty()
+  userEmail: string;
+
+  @ApiProperty({ required: false, example: 'https://example.com' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  homePageUrl: string;
 }

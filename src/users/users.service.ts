@@ -1,6 +1,6 @@
 import * as argon2 from 'argon2';
 
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { isIdNumber } from 'src/common/helpers/isIdNumber';

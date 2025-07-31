@@ -21,4 +21,13 @@ export class Comment extends AbstractEntityClass<Comment> {
 
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   user: User;
+
+  @Column({ nullable: false })
+  userName: string;
+
+  @Column({ nullable: false })
+  userEmail: string;
+
+  @Column({ nullable: true })
+  homePageUrl: string;
 }

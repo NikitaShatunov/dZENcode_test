@@ -22,10 +22,15 @@ export class CommentsService {
     private eventEmitter: EventEmitter2,
   ) {}
   async create(createCommentDto: CreateCommentDto, userId: number) {
-    const { parentCommentId, text } = createCommentDto;
+    const { parentCommentId, text, ...otherDto } = createCommentDto;
     const parent = parentCommentId ? await this.findOne(parentCommentId) : null;
     const user = await this.userService.findOne(userId);
-    const comment = this.commentRepository.create({ parent, user, text });
+    const comment = this.commentRepository.create({
+      parent,
+      user,
+      text,
+      ...otherDto,
+    });
     const savedComment = await this.commentRepository.save(comment);
 
     if (savedComment.parent) {
