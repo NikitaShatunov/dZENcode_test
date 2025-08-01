@@ -30,6 +30,7 @@ export class CommentsService {
     private eventEmitter: EventEmitter2,
     private readonly mediaService: MediaService,
   ) {}
+
   async create(createCommentDto: CreateCommentDto, userId: number) {
     const { parentCommentId, text, mediaId, ...otherDto } = createCommentDto;
     const parent = parentCommentId ? await this.findOne(parentCommentId) : null;
@@ -46,6 +47,7 @@ export class CommentsService {
 
     const savedComment = await this.commentRepository.save(comment);
 
+    //need to show the children count in the parent comment
     if (savedComment.parent) {
       await this.commentRepository.increment(
         { id: savedComment.parent.id },

@@ -29,6 +29,7 @@ export class UsersService {
       createUserDto.email,
       this.userRepository,
     );
+    // Generate a random name for the user
     const name = this.generateRandomName();
     const passwordHash = await argon2.hash(createUserDto.password);
     const user = this.userRepository.create({
@@ -58,22 +59,10 @@ export class UsersService {
     return randomName;
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
-
   async findOne(id: number) {
     isIdNumber(id, 'User');
     const user = await this.userRepository.findOne({ where: { id } });
     validateGetById(id, user, 'User');
     return user;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

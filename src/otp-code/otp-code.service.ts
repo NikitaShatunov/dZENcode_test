@@ -74,10 +74,7 @@ export class OtpCodeService {
           HttpStatus.NOT_FOUND,
         );
       }
-      // const isValid = new Date() > otp.expirationTime ? false : true;
-      // if (!isValid) {
-      //   await this.remove(id);
-      // }
+
       return otp;
     } catch (error) {
       throw error;

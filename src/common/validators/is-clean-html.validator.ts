@@ -14,6 +14,7 @@ export function IsCleanHtml(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
+          // Check if the value is a string and sanitize it
           if (typeof value !== 'string') return false;
           const cleaned = sanitizeHtml(value, {
             allowedTags: ['a', 'code', 'i', 'strong'],

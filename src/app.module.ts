@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { CommentsModule } from './comments/comments.module';
@@ -11,6 +9,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LogsRecordsModule } from './logs-records/logs-records.module';
 import { MediaModule } from './media/media.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -20,17 +20,31 @@ import { MediaModule } from './media/media.module';
     UsersModule,
     LocalAuthModule,
     OtpCodeModule,
+    //For caching and throttling
     CacheModule.register({
       ttl: 5000, // 5 seconds
       max: 100,
       isGlobal: true,
       store: 'memory',
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'short',
+          ttl: 60000, // 60 seconds in milliseconds
+          limit: 10, // 10 requests per minute
+        },
+      ],
+    }),
     EventEmitterModule.forRoot({}),
     LogsRecordsModule,
     MediaModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

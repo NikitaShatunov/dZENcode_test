@@ -13,10 +13,11 @@ import { MediaModule } from './media/media.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
+
   const config = new DocumentBuilder()
-    .setTitle('part of confil')
-    .setDescription('API for of confil')
-    .setVersion('1.3')
+    .setTitle('API for Comments')
+    .setDescription('API documentation for the Comments application')
+    .setVersion('1.1')
     .addBearerAuth(
       {
         type: 'http',
@@ -33,10 +34,12 @@ async function bootstrap() {
     include: [UsersModule, CommentsModule, LocalAuthModule, MediaModule],
   });
   SwaggerModule.setup('api', app, document);
+
   app.use(bodyParser.json());
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
   app.useWebSocketAdapter(new IoAdapter(app));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
