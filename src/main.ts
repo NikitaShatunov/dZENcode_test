@@ -9,6 +9,7 @@ import { CommentsModule } from './comments/comments.module';
 import { LocalAuthModule } from './local-auth/local-auth.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { MediaModule } from './media/media.module';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
