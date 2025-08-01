@@ -1,19 +1,24 @@
 version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
-    container_name: mysql-test
-    restart: always
+    container_name: mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: nest_comments
-      MYSQL_USER: nest_user
-      MYSQL_PASSWORD: nest_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - '3306:3306'
-    volumes:
-      - mysql_data:/var/lib/mysql
 
-volumes:
-  mysql_data:
+  app:
+    build: .
+    container_name: nest-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_HOST: mysql
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mysql
