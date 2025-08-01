@@ -68,7 +68,37 @@ This is a backend server built with **NestJS** that provides a RESTful API and W
 
 ## Setup Instructions
 
-1. Clone the repository:
+1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/your-username/comment-system-api.git
+   git clone https://github.com/NikitaShatunov/dZENcode_test.git .
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Create a `.env` file**  
+   Copy environment variables from the example file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Then update the values as needed (e.g., database credentials).
+
+4. **Launch your MySQL server**  
+   Make sure MySQL is running locally or in Docker, and the credentials match your `.env` file.
+
+5. **Build the project**
+
+   ```bash
+   npm run build
+   ```
+
+6. **Start the application**
+   ```bash
+   npm run start
    ```
